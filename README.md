@@ -31,7 +31,7 @@ Here we just have data reported by Accelerometer sensor. Thus, there are just th
 2. y
 3. z
 -----------------------------------
-<img width="450" alt="Screenshot 2023-11-30 170132" src="https://github.com/hardenia-ji/human_activity_and_recognition/assets/114081218/47f24ccb-88b1-47c4-b3df-fc9db2fafeda">----------------------------------------------------
+<img width="450" alt="Screenshot 2023-11-30 170132" src="https://github.com/hardenia-ji/human_activity_and_recognition/assets/114081218/47f24ccb-88b1-47c4-b3df-fc9db2fafeda">-----------------------------------------
 Accelerometer Data
 -----------------------------
 
@@ -41,11 +41,11 @@ Here we just have data reported by Gyroscope sensor. Thus, there are again just 
 2. y
 3. z
 
-<img width="431" alt="Screenshot 2023-11-30 170145" src="https://github.com/hardenia-ji/human_activity_and_recognition/assets/114081218/acbc4c60-1186-4792-a1d7-b9f3bbe17509">-------------------------------------------------
+<img width="431" alt="Screenshot 2023-11-30 170145" src="https://github.com/hardenia-ji/human_activity_and_recognition/assets/114081218/acbc4c60-1186-4792-a1d7-b9f3bbe17509">------------------------------------------
 Gyroscope Data
 ----------------------
 -------------------------------------------------------------------------------------
-<img width="469" alt="Screenshot 2023-11-30 170209" src="https://github.com/hardenia-ji/human_activity_and_recognition/assets/114081218/a91b68d6-1a53-4236-a8d2-521e3500a45b">-------------------------------------------
+<img width="469" alt="Screenshot 2023-11-30 170209" src="https://github.com/hardenia-ji/human_activity_and_recognition/assets/114081218/a91b68d6-1a53-4236-a8d2-521e3500a45b">--------------------------------------
 Accelerometer+Gyroscope Dataset
 ----------------------
 Labels 
@@ -129,6 +129,6 @@ Metrics: The CNN model is evaluated using the 'accuracy' metric, which calculate
 
 Training: The model is trained using the training data with 10 epochs (iterations) and a batch size of 200. During training, the model tries to minimize the loss function using the optimizer and updates the weights of the model's neurons. The training data is split into training and validation sets using the 'train_test_split' function from sklearn, with a portion of the data used for validation to monitor the model's performance during training and prevent overfitting.
 
-<img width="371" alt="Screenshot 2023-11-30 171915" src="https://github.com/hardenia-ji/human_activity_and_recognition/assets/114081218/bb8aa57a-4158-4113-89c2-d5a93486932f">------------------------------------------------------
+<img width="371" alt="Screenshot 2023-11-30 171915" src="https://github.com/hardenia-ji/human_activity_and_recognition/assets/114081218/bb8aa57a-4158-4113-89c2-d5a93486932f">-------------------------------------------------
 CNN Architechture for Accelerometer+Gyroscope Readings
 ----------------------------------------------------------------------------------------------------------
