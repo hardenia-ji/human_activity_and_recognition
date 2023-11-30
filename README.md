@@ -53,3 +53,46 @@ Labels
 There are 6 different labels:
 
 <img width="186" alt="Screenshot 2023-11-30 165730" src="https://github.com/hardenia-ji/human_activity_and_recognition/assets/114081218/05881c65-d354-4708-a277-18d65e650d0e">
+
+Pre-processing:
+Segment the time-series data into fixed-length windows (e.g., 1-2 seconds), and clean and normalize the data.
+
+Feature Engineering: It is done for doing feature fusion.
+
+For Accelerometer Readings:
+We perform feature engineering on the data by creating new columns such as 
+'accel_x', 'accel_y', 'accel_z', and 'accel_norm' using mathematical operations on existing columns like 'userAcceleration.x','userAcceleration.y','userAcceleration.z', and 'gravity.x', 'gravity.y', 'gravity.z'. These new columns represent the combined acceleration and the magnitude of acceleration in different directions.
+
+For Gyroscope readings
+We perform feature engineering on the data by creating new columns such as 
+'gyro_x', 'gyro_y', 'gyro_z', and 'gyro_norm' using mathematical operations on existing columns like attitude.roll, attitude.pitch, attitude.yaw,rotationRate.x, rotationRate.y, rotationRate.z
+These are sensors that measure the angular velocity or rate of rotation of an object.
+
+For Accelerometer+ Gyroscope readings
+We perform feature engineering on the data by using mathematical operations on existing columns like attitude.roll, attitude.pitch, attitude.yaw,rotationRate.x,rotationRate.y,rotationRate.z,'userAcceleration.x','userAcceleration.y', 'userAcceleration.z', and 'gravity.x', 'gravity.y', 'gravity.z'.
+
+Feature Extraction:
+Extract relevant features from the time-series data, such as mean, variance, and magnitude of acceleration. These features can be computed for each window of data.
+
+Creating Lag Features:
+Create lagged versions of each feature by shifting the feature values backward in time by a specified number of time steps (e.g., 1 or 2). The goal is to capture temporal dependencies and identify patterns that are specific to certain personal attributes.
+By using lag features, we can capture the temporal dynamics of the sensor data and identify patterns that are specific to certain personal attributes. This can help improve the performance of machine learning models for activity recognition and personal attribute inference tasks.
+
+Removal of Overlapping Data and Combining Features:
+
+Remove the first few rows of each window that may overlap with the last few rows of the previous window to avoid using overlapping data in the creation of lagged features.
+Combine the original features and lagged features into a single feature vector for each window.
+
+Training Machine Learning Models:
+
+Train machine learning models using the feature vectors and corresponding labels for activity recognition and personal attribute inference. Use metrics such as accuracy, precision, recall, and F1 score to evaluate the performance of the models on both tasks.
+
+Convolutional Neural Network (CNN):The CNN is implemented using the Sequential class from the keras.models module. This classifier is a type of Deep Learning algorithm that is well-suited for processing grid-like data such as images or time-series data. The Sequential class is used to define a linear stack of layers in the neural network.
+
+For Accelerometer Data:
+
+In this project, the CNN has four layers: an input layer with 3 input dimensions (for accelerometer data), Two hidden layers with 80 and 40 neurons, respectively, and an output layer with 6 neurons (for 6 activity types). 
+The relu activation function is used in the hidden layers, and the softmax 
+activation function is used in the output layer to convert the predicted scores into class probabilities. 
+The categorical_crossentropy loss function is used for multi-class classification, and the Adam optimizer is used to optimize the model parameters. The fit() function is called on the cnn object to train the CNN using the training data train_X (features) and train_y (target labels).
+
