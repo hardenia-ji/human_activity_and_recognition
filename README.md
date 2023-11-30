@@ -80,8 +80,7 @@ By using lag features, we can capture the temporal dynamics of the sensor data a
 
 Removal of Overlapping Data and Combining Features:
 
-Remove the first few rows of each window that may overlap with the last few rows of the previous window to avoid using overlapping data in the creation of lagged features.
-Combine the original features and lagged features into a single feature vector for each window.
+Remove the first few rows of each window that may overlap with the last few rows of the previous window to avoid using overlapping data in the creation of lagged features.Combine the original features and lagged features into a single feature vector for each window.
 
 Training Machine Learning Models:
 
@@ -96,3 +95,40 @@ The relu activation function is used in the hidden layers, and the softmax
 activation function is used in the output layer to convert the predicted scores into class probabilities. 
 The categorical_crossentropy loss function is used for multi-class classification, and the Adam optimizer is used to optimize the model parameters. The fit() function is called on the cnn object to train the CNN using the training data train_X (features) and train_y (target labels).
 
+<img width="403" alt="Screenshot 2023-11-30 171810" src="https://github.com/hardenia-ji/human_activity_and_recognition/assets/114081218/de26737a-fa6c-4980-9c76-2f1174279487">----------------------------------
+CNN Architecture for Accelerometer Data
+------------------------------------------------------------------------
+
+For Gyroscope Data:
+The architecture of the Convolutional Neural Network (CNN) used here isfeedforward neural network with multiple dense layers (also known as fully connected layers) stacked on top of each other. The architecture of the CNN is as follows:
+
+Input Layer: The input layer has 3 neurons representing the three gyroscope readings (gyro_x, gyro_y, gyro_z).
+Dense Layer 1: This layer has 80 neurons with 'relu' activation function, which stands for Rectified Linear Unit. It is a commonly used activation function that introduces non-linearity to the network.
+Dense Layer 2: This layer has 40 neurons with 'relu' activation function.
+Dense Layer 3: This layer has 20 neurons with 'relu' activation function.
+Output Layer: This layer has 6 neurons representing the 6 different activities (dws, ups, sit, std, wlk, jog) with 'softmax' activation function. Softmax is used for multi-class classification problems to convert the output into probability scores for each class.
+The CNN is compiled with the categorical cross-entropy loss function and Adam optimizer with a learning rate of 0.01. The 'accuracy' metric is used to evaluate the performance of the model during training. The data is split into training and validation sets using the train_test_split function from sklearn.model_selection module.
+
+<img width="377" alt="Screenshot 2023-11-30 171857" src="https://github.com/hardenia-ji/human_activity_and_recognition/assets/114081218/b74b6d7e-c914-4da8-bab1-9e6357825fc9">-------------------------------------
+CNN Architecture for Gyroscope Data
+
+-------------------------------------------------------------------------------------------------
+
+For Accelerometer+Gyroscope Dataset:
+
+Input Layer: The input layer of the CNN has 7 input nodes, representing the features extracted from the accelerometer and gyroscope data, including acceleration in x, y, and z directions, normalized acceleration (accel_norm), and gyroscope data in x, y, and z directions.
+
+Dense Layers: The CNN has three dense (fully connected) hidden layers with different numbers of nodes. The first hidden layer has 80 nodes with the 'relu' activation function, the second hidden layer has 40 nodes with the 'relu' activation function, and the third hidden layer has 20 nodes with the 'relu' activation function. The 'relu' activation function is commonly used in deep neural networks and stands for Rectified Linear Unit, which introduces non-linearity to the model.
+
+Output Layer: The output layer of the CNN has 6 nodes, which represents the 6 different activities ('dws', 'ups', 'sit', 'std', 'wlk', 'jog') that the model predicts. The output layer uses the 'softmax' activation function, which converts the output of each node into probabilities, indicating the probability of each activity being predicted.
+
+Optimizer: The optimizer used in the CNN is Adam (Adaptive Moment Estimation), which is a popular optimizer for training deep neural networks. It adjusts the learning rate adaptively during training, making it efficient and effective for convergence.
+
+Loss Function: The loss function used in the CNN is 'categorical_crossentropy', which is commonly used for multi-class classification problems with more than two classes.It measures the difference between the predicted probabilities and the actual target values.
+
+Metrics: The CNN model is evaluated using the 'accuracy' metric, which calculates the accuracy of the model predictions compared to the actual target values during training and validation.
+
+Training: The model is trained using the training data with 10 epochs (iterations) and a batch size of 200. During training, the model tries to minimize the loss function using the optimizer and updates the weights of the model's neurons. The training data is split into training and validation sets using the 'train_test_split' function from sklearn, with a portion of the data used for validation to monitor the model's performance during training and prevent overfitting.
+
+<img width="371" alt="Screenshot 2023-11-30 171915" src="https://github.com/hardenia-ji/human_activity_and_recognition/assets/114081218/bb8aa57a-4158-4113-89c2-d5a93486932f">----------------------------------
+ CNN Architechture for Accelerometer+Gyroscope Readings
