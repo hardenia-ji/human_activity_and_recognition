@@ -31,7 +31,7 @@ Here we just have data reported by Accelerometer sensor. Thus, there are just th
 2. y
 3. z
 -----------------------------------
-<img width="450" alt="Screenshot 2023-11-30 170132" src="https://github.com/hardenia-ji/human_activity_and_recognition/assets/114081218/47f24ccb-88b1-47c4-b3df-fc9db2fafeda">-----------------------------------------
+<img width="450" alt="Screenshot 2023-11-30 170132" src="https://github.com/hardenia-ji/human_activity_and_recognition/assets/114081218/47f24ccb-88b1-47c4-b3df-fc9db2fafeda">----------------------------------------
 Accelerometer Data
 -----------------------------
 
@@ -132,3 +132,7 @@ Training: The model is trained using the training data with 10 epochs (iteration
 <img width="371" alt="Screenshot 2023-11-30 171915" src="https://github.com/hardenia-ji/human_activity_and_recognition/assets/114081218/bb8aa57a-4158-4113-89c2-d5a93486932f">-------------------------------------------------
 CNN Architechture for Accelerometer+Gyroscope Readings
 ----------------------------------------------------------------------------------------------------------
+
+Decision Tree Classifier:The Decision Tree Classifier is implemented using the DecisionTreeClassifier class from the sklearn.tree module. This classifier is a type of Supervised Learning algorithm used for classification tasks. It creates a tree-like structure where each internal node represents a feature (e.g., accelerometer data in this case) and each leaf node represents a class label (e.g., activity type). The tree is built by recursively splitting the data based on the feature that best separates the data into different classes. The fit() function is called on the dtc object to train the Decision Tree Classifier using the training data X (features) and y (target labels).
+
+Random Forest Classifier:The Random Forest Classifier is implemented using the RandomForestClassifier class from the sklearn.ensemble module. This classifier is an ensemble method that combines multiple decision trees to improve the accuracy and robustness of the model. It creates a collection of decision trees (i.e., forest) and makes predictions by averaging the predictions of all individual trees. The n_estimators parameter is used to specify the number of decision trees in the forest. The fit() function is called on the rfc object to train the Random Forest Classifier using the training data X (features) and y (target labels).
