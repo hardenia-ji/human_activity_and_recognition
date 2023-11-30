@@ -30,6 +30,7 @@ Here we just have data reported by Accelerometer sensor. Thus, there are just th
 1. x
 2. y
 3. z
+-----------------------------------
 <img width="450" alt="Screenshot 2023-11-30 170132" src="https://github.com/hardenia-ji/human_activity_and_recognition/assets/114081218/47f24ccb-88b1-47c4-b3df-fc9db2fafeda">--------------------------------------------------------
 Accelerometer Data
 
