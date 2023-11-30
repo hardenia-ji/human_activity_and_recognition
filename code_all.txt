@@ -1,0 +1,320 @@
+import numpy as np
+import pandas as pd
+import os
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_absolute_error
+import warnings
+warnings.filterwarnings('ignore')
+path = '/kaggle/input/motionsensedataset/A_DeviceMotion_data/A_DeviceMotion_data/'
+# Setting up lists for importing the data.
+list_of_folders = os.listdir(path)
+list_of_directories = [path + i for i in list_of_folders]
+list_of_dfs = []
+activities = ['dws', 'ups', 'sit', 'std', 'wlk', 'jog']
+
+for i in list_of_directories:
+list_of_csv = os.listdir(i)
+for j in list_of_csv:
+k = pd.read_csv(i + '/' + j).rename(columns={'Unnamed: 0': 'time'})
+k['subject'] = int(j.split('_')[1].split('.')[0])
+k['activity'] = i.split('/')[6].split('_')[0]
+k['trial'] = int(i.split('/')[6].split('_')[1])
+k.insert(0, 'accel_x', k['userAcceleration.x'] + k['gravity.x'])
+k.insert(1, 'accel_y', k['userAcceleration.y'] + k['gravity.y'])
+k.insert(2, 'accel_z', k['userAcceleration.z'] + k['gravity.z'])
+k.insert(3, 'accel_norm', np.sqrt(k['accel_x']**2 + k['accel_y']**2 +
+k['accel_z']**2))
+list_of_dfs.append(k)
+
+# Creating one big dataframe (df) from the list of all individual dataframes.
+Dropping unnecessary columns and renaming the ones for rotation.
+df = pd.concat(list_of_dfs).set_index('time')
+df = df.drop(['attitude.roll', 'attitude.pitch', 'attitude.yaw', 'gravity.x',
+'gravity.y', 'gravity.z', 'userAcceleration.x', 'userAcceleration.y',
+'userAcceleration.z'], axis=1)
+df = df.rename(columns={'rotationRate.x': 'gyro_x', 'rotationRate.y': 'gyro_y',
+'rotationRate.z': 'gyro_z'})
+df
+# Separating the dataframe into a training set and a test set. Making the
+cut between the long (1-9) and the short trials (11-16), with the short trials
+including one of each activity.
+train_df = df[(df.trial < 10)]
+test_df = df[(df.trial > 10)]
+# Creating the features X and the targets y out of the training dataframe.
+Features are the seven columns for accelerometer (x,y,z,norm) and
+gyroscope (x,y,z).
+X = train_df.iloc[:,:-3]
+y = train_df.activity
+
+# DecisionTreeClassifier
+from sklearn.tree import DecisionTreeClassifier
+dtc = DecisionTreeClassifier()
+dtc.fit(X, y)
+# Checking the model on the test set by activity.
+def test_results(model, df):
+"""
+Parameters
+----------
+model :
+DecisionTreeClassifier or RandomForestClassifier
+df : pd.DataFrame
+a dataframe on which the model makes predictions, including the
+activity column as target
+Returns
+-------
+prints out a list of the accuracy of the model on the dataframe for
+each activity
+"""
+correct = 0
+total = 0
+for i in activities:
+k = df.iloc[:,:-3][(df.activity == i)]
+preds = model.predict(k)
+print(i + ': ' + str(((preds == i).sum() / len(preds))*100) + '%')
+correct += (preds == i).sum()
+total += len(preds)
+print('total: ' + str(correct / total * 100) + '%')
+test_results(dtc, test_df)
+test_df.activity.value_counts()
+
+# RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier
+rfc = RandomForestClassifier(n_estimators=10)
+rfc.fit(X, y)
+test_results(rfc, test_df)
+
+from keras.models import Sequential
+from keras.layers import Dense
+from keras.utils import np_utils
+from tensorflow import keras
+from sklearn.preprocessing import LabelEncoder
+
+encoder = LabelEncoder()
+encoder.fit(y)
+encoded_y = encoder.transform(y)
+dummy_y = np_utils.to_categorical(encoded_y)
+
+cnn = Sequential()
+cnn.add(Dense(80, input_dim=7, activation='relu'))
+cnn.add(Dense(40, activation='relu'))
+cnn.add(Dense(20, activation='relu'))
+cnn.add(Dense(6, activation='softmax'))
+
+opt = keras.optimizers.Adam(learning_rate=0.01)
+cnn.compile(loss='categorical_crossentropy', optimizer=opt,
+metrics=['accuracy'])
+
+train_X, val_X, train_y, val_y = train_test_split(X, dummy_y, shuffle=True)
+history = cnn.fit(train_X, train_y, epochs=10, batch_size=200,
+validation_data=(val_X, val_y))
+
+history_df = pd.DataFrame(history.history)
+history_df.loc[:, ['loss', 'val_loss']].plot()
+plt.show()
+
+def cnn_test_results(model, df):
+correct = 0
+total = 0
+for i in activities:
+k = df.iloc[:,:-3][(df.activity == i)]
+preds = model.predict(k)
+encoder = LabelEncoder()
+encoder.fit(df.activity)
+l = []
+for j in range(len(preds)):
+l.append(list(encoder.classes_)[np.argmax(preds[j])])
+accuracy = sum([l[j] == i for j in range(len(l))])/len(l)
+print(i + ': ' + str(accuracy*100) + '%')
+correct += sum([l[j] == i for j in range(len(l))])
+total += len(l)
+print('total: ' + str(correct / total * 100) + '%')
+
+cnn_test_results(cnn, test_df)
+
+def create_lag_features(n, cols):
+"""
+Parameters
+----------
+n : int
+amount of lag features
+cols : list
+list of columns to lag
+Returns
+-------
+pd.DataFrame
+a dataframe with the list of columns lagged n times
+"""
+lag_features = n
+lag_df = df.copy()
+for j in cols:
+for i in range(lag_features):
+lag_df.insert(7+i, j + '_lag' + str(i+1), lag_df[j].shift(i+1))
+# Dropping all rows where the lag overlapped two different
+subjects/trials (n timeframes at the beginning of every trial).
+for i in range(lag_features):
+lag_df = lag_df.drop([i])
+return lag_df
+lag_df = create_lag_features(50, ['accel_norm'])
+lag_df.head()
+# Training and test sets with lag and the corresponding features and
+targets.
+lag_train_df = lag_df[(lag_df.trial < 10)]
+lag_test_df = lag_df[(lag_df.trial > 10)]
+lag_X = lag_train_df.iloc[:,:-3]
+lag_y = lag_train_df.activity
+
+# RandomForestClassifier
+lag_rfc = RandomForestClassifier(n_estimators=10)
+lag_rfc.fit(lag_X, lag_y)
+test_results(lag_rfc, lag_test_df)
+
+# Neural network for lag features.
+import tensorflow as tf
+lag_features = 50
+lag_cnn = Sequential()
+lag_cnn.add(Dense(64, input_dim=7+lag_features, activation='relu'))
+lag_cnn.add(Dense(32, activation='relu',
+kernel_regularizer=tf.keras.regularizers.l2(l=0.02)))
+lag_cnn.add(Dense(16, activation='relu'))
+lag_cnn.add(Dense(6, activation='softmax'))
+lag_opt = keras.optimizers.Adam(learning_rate=0.01)
+lag_cnn.compile(loss='categorical_crossentropy', optimizer=lag_opt,
+metrics=['accuracy'])
+# Encoding the targets by one-hot-encoding to a binary matrix
+(lag_dummy_y).
+lag_encoder = LabelEncoder()
+lag_encoder.fit(lag_y)
+lag_encoded_y = lag_encoder.transform(lag_y)
+lag_dummy_y = np_utils.to_categorical(lag_encoded_y)
+lag_train_X, lag_val_X, lag_train_y, lag_val_y = train_test_split(lag_X,
+lag_dummy_y, shuffle=True)
+history = lag_cnn.fit(lag_train_X, lag_train_y, epochs=10, batch_size=200,
+validation_data=(lag_val_X, lag_val_y))
+history_df = pd.DataFrame(history.history)
+history_df.loc[:, ['loss', 'val_loss']].plot()
+plt.show()
+cnn_test_results(lag_cnn, lag_test_df)
+
+# Quick function for generating a list of the predictions to compare with
+the targets, instead of a matrix of their probabilities.
+def cnn_pred_list(model, df):
+"""
+Parameters
+----------
+model : tf.keras.Sequential()
+a model in form of a convolutional neural network, Sequential used
+here
+df : pd.DataFrame
+a dataframe on which the model makes predictions, including the
+activity column as target
+Returns
+-------
+l : list
+a list of the encrypted predictions of the model
+y : pd.Series
+the target vector to compare with the prediction list
+"""
+l = []
+X = df.iloc[:,:-3]
+y = df.activity
+preds = model.predict(X)
+encoder = LabelEncoder()
+encoder.fit(y)
+for i in range(len(preds)):
+l.append(list(encoder.classes_)[np.argmax(preds[i])])
+return l, y
+lag_pred, lag_y = cnn_pred_list(lag_cnn, lag_test_df)
+
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import ConfusionMatrixDisplay
+from matplotlib import pyplot as plt
+conf_mat = confusion_matrix(lag_pred, lag_y, labels=activities)
+conf_mat_disp = ConfusionMatrixDisplay(confusion_matrix=conf_mat,
+display_labels=activities)
+conf_mat_disp.plot(cmap='Greens')
+plt.show()
+
+# Creating rolling feature columns.
+def create_feature_columns(k):
+"""
+Parameters
+----------
+k : int
+the amount of steps for the rolling features
+Returns
+-------
+pd.Dataframe
+a new dataframe with rolling features over k steps
+"""
+feat_df = df.copy()
+cols = feat_df.iloc[:,:-3].columns
+j = 1
+for i in cols:
+feat_df.insert(j, f'{i}_rmean', feat_df[i].rolling(k).mean())
+feat_df.insert(j+1, f'{i}_rstd', feat_df[i].rolling(k).std())
+feat_df.insert(j+2, f'{i}_rmed', feat_df[i].rolling(k).median())
+#feat_df.insert(j+3, f'{i}_rskew', feat_df[i].rolling(k).skew())
+#feat_df.insert(j+4, f'{i}_rmax', feat_df[i].rolling(k).max())
+#feat_df.insert(j+5, f'{i}_rmin', feat_df[i].rolling(k).min())
+#feat_df.insert(j+6, f'{i}_squared', feat_df[i]**2)
+j += 4
+# Dropping all rows where the lag overlapped two different
+subjects/trials.
+for i in range(k):
+feat_df = feat_df.drop([i])
+return feat_df
+feat_df = create_feature_columns(150)
+feat_df
+feat_train_df = feat_df[(feat_df.trial < 10)]
+feat_test_df = feat_df[(feat_df.trial > 10)]
+feat_X = feat_train_df.iloc[:,:-3]
+feat_y = feat_train_df.activity
+
+# RandomForestClassifier
+feat_rfc = RandomForestClassifier(n_estimators=10)
+feat_rfc.fit(feat_X, feat_y)
+test_results(feat_rfc, feat_test_df)
+
+# CNN Model for feature df:
+import tensorflow as tf
+from keras.layers import Dropout
+extra_features = 21
+feat_cnn = Sequential()
+feat_cnn.add(Dense(64, input_dim=7+extra_features, activation='relu'))
+feat_cnn.add(Dense(48, activation='relu',
+kernel_regularizer=tf.keras.regularizers.l2(l=0.02)))
+feat_cnn.add(Dropout(0.2))
+feat_cnn.add(Dense(32, activation='relu',
+kernel_regularizer=tf.keras.regularizers.l2(l=0.02)))
+feat_cnn.add(Dropout(0.5))
+feat_cnn.add(Dense(16, activation='relu',
+kernel_regularizer=tf.keras.regularizers.l2(l=0.01)))
+feat_cnn.add(Dense(6, activation='softmax'))
+feat_opt = keras.optimizers.Adam(learning_rate=0.01)
+feat_cnn.compile(loss='categorical_crossentropy', optimizer=feat_opt,
+metrics=['accuracy'])
+feat_encoder = LabelEncoder()
+feat_encoder.fit(feat_y)
+feat_encoded_y = feat_encoder.transform(feat_y)
+feat_dummy_y = np_utils.to_categorical(feat_encoded_y)
+feat_train_X, feat_val_X, feat_train_y, feat_val_y = train_test_split(feat_X,
+feat_dummy_y, shuffle=True, random_state=420)
+from tensorflow.keras.callbacks import EarlyStopping
+early_stopping = EarlyStopping(min_delta=0.001, patience=10,
+restore_best_weights=True)
+history = feat_cnn.fit(feat_train_X, feat_train_y, epochs=50, batch_size=200,
+validation_data=(feat_val_X, feat_val_y), callbacks=[early_stopping])
+history_df = pd.DataFrame(history.history)
+history_df.loc[:, ['loss', 'val_loss']].plot()
+plt.show()
+cnn_test_results(feat_cnn, feat_test_df)
+feat_pred, feat_targ = cnn_pred_list(feat_cnn, feat_test_df)
+
+# Confusion Matrix:
+conf_mat = confusion_matrix(feat_pred, feat_targ, labels=activities)
+conf_mat_disp = ConfusionMatrixDisplay(confusion_matrix=conf_mat,
+display_labels=activities)
+conf_mat_disp.plot(cmap='Greens')
+plt.show()
+
