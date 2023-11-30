@@ -40,3 +40,5 @@ Here we just have data reported by Gyroscope sensor. Thus, there are again just 
 Labels 
 
 There are 6 different labels:
+
+<img width="186" alt="Screenshot 2023-11-30 165730" src="https://github.com/hardenia-ji/human_activity_and_recognition/assets/114081218/05881c65-d354-4708-a277-18d65e650d0e">
